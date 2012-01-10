@@ -1,0 +1,62 @@
+/* MAIN COLORS */
+.grey{color:#1D1D1D;}
+.dblue{color:#0E4241;}
+.lblue{color:#3A6E64;}
+.white{color:#FFFFFF;}
+.orange{color:#DE6F00;}
+
+html { height: 100% }
+
+body {
+  font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0px;
+  padding: 0px;
+  height:100%;
+  width:100%;
+}
+
+a {
+  color: #3A6E64;
+}
+
+#header{
+  margin: 0px;
+  padding: 0px;
+  height:20px;
+}
+
+#headerText{
+  font-family: 'Anton', sans-serif;
+  color:#0E4241;
+  font-size:20px;
+  margin: 0px 0px 0px 20px;
+  padding: 0px;
+}
+
+#headerRight{
+  float:right;
+  margin-top:10px;
+  margin-right:20px;
+}
+
+#loginDiv{
+  float:right;
+}
+
+#createDiv{
+  float:right;
+}
+
+#create{
+  margin-right:5px;
+}
+
+#wrapper{
+  height:100%;
+  width:100%;
+}
+
+#mapCanvas{
+  height:100%;
+  width:100%;
+}

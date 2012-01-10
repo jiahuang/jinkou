@@ -1,0 +1,36 @@
+!!! 5
+html
+  head
+    title= title //Jinkou - A travel map
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(href='http://fonts.googleapis.com/css?family=Anton', rel='stylesheet', type='text/css')
+    script(src='/javascripts/jquery-1.7.1.min.js')
+    script(src='http://maps.googleapis.com/maps/api/js?sensor=false')
+    script(src='/javascripts/jinkou.js')
+  body
+    div#header
+      span#headerText jinkou
+      span#headerRight
+        a#create(href='#') new user
+        a#login(href='#') login
+    div#loginDiv(style='display:none;')
+      p LOGIN
+      form(method="post", action="/login")
+        p Username/Email
+        input(type="text", name="user[name]")
+        p Password
+        input(type="password", name="user[pw]")
+        input#loginSubmit(type="submit", value="Login")
+    div#createDiv(style='display:none;')
+      p NEW USER
+      form(method="post", action="/user/new")
+        p Email
+        input(type="text", name="user[email]")
+        p Username
+        input(type="text", name="user[name]")
+        p Password
+        input(type="password", name="user[pw]")
+        input(type="checkbox", value="Show Password")
+        input#createSubmit(type="submit", value="Create")
+            
+    div#wrapper!= body
