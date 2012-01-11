@@ -11,8 +11,12 @@ html
     div#header
       span#headerText jinkou
       span#headerRight
-        a#create(href='#') new user
-        a#login(href='#') login
+        if !session.loggedin
+          a#create(href='#') new user
+          a#login(href='#') login          
+        else
+          a#user(href='#') #{session.name}
+          a#logout(href='/logout') logout
     div#loginDiv(style='display:none;')
       p LOGIN
       form(method="post", action="/login")

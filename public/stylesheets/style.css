@@ -22,7 +22,10 @@ a {
 #header{
   margin: 0px;
   padding: 0px;
-  height:20px;
+  height:30px;
+  border-bottom-style: solid; 
+  border-bottom-color: #CEE5F5; 
+  border-bottom-width: 2px; 
 }
 
 #headerText{
@@ -41,13 +44,25 @@ a {
 
 #loginDiv{
   float:right;
+  border: solid 2px #CEE5F5;
+  border-top: none; 
+  background-color:white;
+  margin-top:-2px;
 }
 
 #createDiv{
   float:right;
+  border: solid 2px #CEE5F5;
+  border-top: none; 
+  background-color:white;
+  margin-top:-2px;
 }
 
 #create{
+  margin-right:5px;
+}
+
+#user{
   margin-right:5px;
 }
 
@@ -59,4 +74,19 @@ a {
 #mapCanvas{
   height:100%;
   width:100%;
+  z-index:-1;
+}
+
+#sideBar{
+  width:100%;
+  height:150px;
+  background-color:white;
+  border-top-style: solid; 
+  border-top-color: #CEE5F5; 
+  border-top-width: 2px; 
+  position:absolute;
+  bottom:0;
+	/*-webkit-border-radius: 0 5px 5px 5px;
+	-moz-border-radius: 0 5px 5px 5px;
+	border-radius: 0 5px 5px 5px;*/
 }

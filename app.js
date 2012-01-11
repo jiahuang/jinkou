@@ -77,6 +77,12 @@ function resizeImage(src, dest, imageWidth, imageHeight){
   });
 }
 
+app.dynamicHelpers({
+    session: function (req, res) {
+        return req.session;
+    }
+});
+
 /************************** Routes ************************************/
 // STATIC PAGES
 app.get('/', indexRoute.index);
@@ -93,10 +99,11 @@ app.post('/login', function(req, res){
     else {
       if (doc != null){
         // retrieve and show doc
-        res.send("logged in");
         req.session.loggedin = true;
-        console.log(doc);
+        //console.log(doc);
         req.session.uid = doc._id;
+        req.session.name = doc.name;
+        res.redirect('/user/'+doc.name);
       }
       else{
         console.log("could not find "+ req.params.uid);
@@ -122,12 +129,14 @@ app.post('/photos', function(req, res){
         res.statusCode = 400;
         res.send("error");
       }
-      for (photo in req.files.photos){
+      console.log('trying to upload photos');
+      console.log(req.files);
+      for (photo in req.files){
         console.log('photo');
-        console.log(req.files.photos[photo]);
-        var name = getImageName(req.files.photos[photo].path);
-        resizeImage(req.files.photos[photo].path, IMG_UPLOAD_SMALL_DIR+name, '100', '100');
-        resizeImage(req.files.photos[photo].path, IMG_UPLOAD_MEDIUM_DIR+name, '200', '200');
+        console.log(req.files[photo]);
+        var name = getImageName(req.files[photo].path);
+        resizeImage(req.files[photo].path, IMG_UPLOAD_SMALL_DIR+name, '100', '100');
+        resizeImage(req.files[photo].path, IMG_UPLOAD_MEDIUM_DIR+name, '200', '200');
         // push file name
         foundUser.photos.push({image:name});
         foundUser.save(function(err){
@@ -168,19 +177,19 @@ app.post('/user/new', function(req, res){
 });
 
 // MAIN PAGES
-app.get('/user/:uid?', function(req, res){
+app.get('/user/:name?', function(req, res){
   /*get*/
   // try and find user
-  User.findOne({ name: req.params.uid}, function (err, doc){
+  User.findOne({ name: req.params.name}, function (err, doc){
     if (err) 
-      console.log('Error could not find '+ req.params.uid);
+      console.log('Error could not find '+ req.params.name);
     else {
       if (doc != null){
         // retrieve and show doc
         console.log(doc);
       }
       else{
-        console.log("could not find "+ req.params.uid);
+        console.log("could not find "+ req.params.name);
       }
     }
   });
