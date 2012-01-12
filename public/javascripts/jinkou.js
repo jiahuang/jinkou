@@ -3,7 +3,7 @@
     $('#imgTimeline')
       .append($('<span>')
         .append($('<img>')
-          .attr('src', '/images/ajax-loader.gif')
+          .attr('src', '/images/site/ajax-loader.gif')
           .attr('class', 'ajaxImg')));
   }
   
