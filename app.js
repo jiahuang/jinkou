@@ -19,20 +19,22 @@ var express = require('express'),
   User,
   Photo;
 
-var IMG_UPLOAD_DIR = '../static/images/original';
-var IMG_UPLOAD_SMALL_DIR = '../static/images/small';
-var IMG_UPLOAD_MEDIUM_DIR = '../static/images/medium';
+var IMG_UPLOAD_DIR = __dirname + '/public/images/uploaded/original';
+var IMG_UPLOAD_SMALL_DIR = __dirname + '/public/images/uploaded/small';
+var IMG_UPLOAD_MEDIUM_DIR = __dirname + '/public/images/uploaded/medium';
+var IMG_UPLOAD_LARGE_DIR = __dirname + '/public/images/uploaded/large';
 /************************** Configuration *****************************/
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   //app.set('view options', { layout: false });
-  app.use(express.bodyParser({ uploadDir: IMG_UPLOAD_DIR}));
+  app.use(express.bodyParser({ uploadDir: IMG_UPLOAD_DIR,keepExtensions: true}));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
   app.use(express.session({ secret: 'your secret here' }));
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
+  //app.use('/uploaded',express.static(__dirname + '../static/images'));
   //app.use('/js',express.static('../js'));
     //app.use('/css',express.static('../css'));
     //app.use('/img',express.static('../img'));
@@ -66,14 +68,16 @@ function getImageName(imagePath){
   return imagePath.substring(IMG_UPLOAD_DIR.length);
 }
 
-function resizeImage(src, dest, imageWidth, imageHeight){
+function resizeImage(src, dest, imageWidth, imageHeight, callback){
   im.resize({
     srcPath: src,
     dstPath: dest,
     width:   imageWidth
   }, function(err, stdout, stderr){
     if (err) throw err
-    console.log('resized')
+    if (typeof callback === 'function')
+      callback();
+    console.log('resized');
   });
 }
 
@@ -94,22 +98,23 @@ app.post('/login', function(req, res){
   var userInfo = req.body.user;
   // try and find something with the same info
   User.findOne({ email: userInfo.name, pw:userInfo.pw}, function (err, doc){
-    if (err) 
+    if (err) {
       console.log('Error could not find '+ req.params.uid);
+      return;
+    }
     else {
-      if (doc != null){
-        // retrieve and show doc
-        req.session.loggedin = true;
-        //console.log(doc);
-        req.session.uid = doc._id;
-        req.session.name = doc.name;
-        res.redirect('/user/'+doc.name);
-      }
-      else{
+      if (doc == null){
         console.log("could not find "+ req.params.uid);
         res.statusCode = 400;
         res.send("error");
+        return;
       }
+      // retrieve and show doc
+      req.session.loggedin = true;
+      //console.log(doc);
+      req.session.uid = doc._id;
+      req.session.name = doc.name;
+      res.redirect('/user/'+doc.name);
     }
   });
 });
@@ -121,39 +126,44 @@ app.get('/logout', function(req, res){
 
 // uploads photos
 app.post('/photos', function(req, res){
-  if (req.session.loggedin){
-    // find current user
-    User.findById( req.session.uid, function (err, foundUser) {
-      if (err){
-        console.log("FATAL ERROR: could not find user "+req.session.uid);
-        res.statusCode = 400;
-        res.send("error");
-      }
-      console.log('trying to upload photos');
-      console.log(req.files);
-      for (photo in req.files){
-        console.log('photo');
-        console.log(req.files[photo]);
-        var name = getImageName(req.files[photo].path);
-        resizeImage(req.files[photo].path, IMG_UPLOAD_SMALL_DIR+name, '100', '100');
-        resizeImage(req.files[photo].path, IMG_UPLOAD_MEDIUM_DIR+name, '200', '200');
-        // push file name
-        foundUser.photos.push({image:name});
-        foundUser.save(function(err){
-          if (err){ 
-            console.log("could not update user");
-            console.log(err);
-          }
-        });
-      }
-      res.send("image successfully uploaded");
-    });
-    
-  }
-  else{
+  console.log('reached photos');
+  console.log(req.session);
+  if (!req.session.loggedin){
     res.statusCode = 400;
     res.send("Must be logged in");
+    return;
   }
+  // find current user
+  console.log('finding user');
+  User.findById( req.session.uid, function (err, foundUser) {
+    if (err){
+      console.log("FATAL ERROR: could not find user "+req.session.uid);
+      res.statusCode = 400;
+      res.send("error");
+      return;
+    }
+    console.log('trying to upload photos');
+    console.log(req.files);
+    
+    for (photo in req.files){
+     console.log('photo');
+      //console.log(req.files[photo]);
+      var path = req.files[photo].path;
+      var name = getImageName(path);
+      resizeImage(path, IMG_UPLOAD_SMALL_DIR+name, '100', '100', function(){
+        res.send({img_url:IMG_UPLOAD_SMALL_DIR+name});
+      });
+      resizeImage(path, IMG_UPLOAD_MEDIUM_DIR+name, '200', '200');
+      // push file name
+      foundUser.photos.push({image:name});
+      foundUser.save(function(err){
+        if (err){ 
+          console.log("could not update user");
+          console.log(err);
+        }
+      }); 
+    }
+  });
 });
 
 // create new user
@@ -164,40 +174,36 @@ app.post('/user/new', function(req, res){
   user.email = userInfo.email;
   user.pw = userInfo.pw;
   user.save(function (err) {
-    if (!err){ 
-      console.log('Success!');
-      res.send("Successfully created user");
-    }
-    else{
+    if (err){
       console.log(err);
       res.statusCode = 400;
       res.send("error could not create user");
+      return;
     }
+    console.log('Success!');
+    res.send("Successfully created user");
   });
 });
 
 // MAIN PAGES
 app.get('/user/:name?', function(req, res){
-  /*get*/
   // try and find user
   User.findOne({ name: req.params.name}, function (err, doc){
-    if (err) 
+    if (err) { 
       console.log('Error could not find '+ req.params.name);
-    else {
-      if (doc != null){
-        // retrieve and show doc
-        console.log(doc);
-      }
-      else{
-        console.log("could not find "+ req.params.name);
-      }
+      res.statusCode = 400;
+      res.send("error could not create user");
+      return;
     }
+    if (doc == null){
+      console.log("could not find "+ req.params.name);
+      res.statusCode = 400;
+      res.send("error could not find user");
+      return;
+    }
+    //console.log(doc);
+    res.render('user', { title: 'User page', viewing: req.params.uid });
   });
-  //console.log('query'+req.query['stuff']);
-  //console.log('date'+req.query['date']);
-  // if username is valid, then get user, else create fake user
-  res.render('user', { title: 'User page', viewing: req.params.uid });
-  /*post*/
 });
 
 /************************** Start ************************************/
