@@ -28,6 +28,14 @@ a {
   border-bottom-width: 2px; 
 }
 
+#wrapper{
+  top:30px;left:0px;right:0px;bottom:0px;position:absolute;
+}
+
+#content{
+  top:0px;bottom:0px;left:0px;width:100%;overflow-y:auto
+}
+
 #headerText{
   font-family: 'Anton', sans-serif;
   color:#0E4241;
@@ -66,15 +74,9 @@ a {
   margin-right:5px;
 }
 
-#wrapper{
-  height:100%;
-  width:100%;
-}
-
 #mapCanvas{
   height:100%;
   width:100%;
-  z-index:-1;
 }
 
 #sideBar{

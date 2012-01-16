@@ -68,6 +68,18 @@ function getImageName(imagePath){
   return imagePath.substring(IMG_UPLOAD_DIR.length);
 }
 
+function getImgUrlSmall(imageName){
+  return '/images/uploaded/small/'+imageName;
+}
+
+function getImgUrlMed(imageName){
+  return '/images/uploaded/medium/'+imageName;
+}
+
+function getImgUrlOrig(imageName){
+  return '/images/uploaded/original/'+imageName;
+}
+
 function resizeImage(src, dest, imageWidth, imageHeight, callback){
   im.resize({
     srcPath: src,
@@ -124,6 +136,20 @@ app.get('/logout', function(req, res){
   res.send("logged out");
 });
 
+app.get('/photos/:name?', function(req, res){
+  // for now returns 10 relavant photos to populate sidebar
+  User.findOne({name: req.params.name}, function (err, doc){
+    if (err || doc == null){
+      console.log("err: "+ err);
+      res.statusCode = 400;
+      res.send("error could not find user");
+      return;
+    }
+    //console.log(doc.photos.slice(-10));
+    res.send({imgs: doc.photos.slice(-10) });
+  });
+});
+
 // uploads photos
 app.post('/photos', function(req, res){
   console.log('reached photos');
@@ -151,7 +177,7 @@ app.post('/photos', function(req, res){
       var path = req.files[photo].path;
       var name = getImageName(path);
       resizeImage(path, IMG_UPLOAD_SMALL_DIR+name, '100', '100', function(){
-        res.send({img_url:IMG_UPLOAD_SMALL_DIR+name});
+        res.send({img_url:getImgUrlSmall(name)});
       });
       resizeImage(path, IMG_UPLOAD_MEDIUM_DIR+name, '200', '200');
       // push file name
@@ -189,14 +215,8 @@ app.post('/user/new', function(req, res){
 app.get('/user/:name?', function(req, res){
   // try and find user
   User.findOne({ name: req.params.name}, function (err, doc){
-    if (err) { 
-      console.log('Error could not find '+ req.params.name);
-      res.statusCode = 400;
-      res.send("error could not create user");
-      return;
-    }
-    if (doc == null){
-      console.log("could not find "+ req.params.name);
+    if (err || doc == null){
+      console.log("err: "+ err);
       res.statusCode = 400;
       res.send("error could not find user");
       return;
